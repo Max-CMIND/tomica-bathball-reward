@@ -1,11 +1,15 @@
 # Tomica-style Bath Ball Reward Tracker
 
-A mobile/tablet-friendly family reward tracker.
+手機／平板使用的家庭泡澡球集點網頁。
 
-- School drop-off: 2 times = 1 point
-- Bedtime陪睡: 1 time = 1 point
-- 10 points = 1 bath ball reward
-- Progress is stored locally in the browser
+- 爸爸送上學：2 次 = 1 點
+- 爸爸陪睡：1 次 = 1 點
+- 集滿 5 點 = 1 顆泡澡球
+- 進度使用瀏覽器 localStorage 自動保存
+- 5/5 尚未領取就關閉，下次開啟仍會再次顯示成功畫面
+- 按 ✓ 後泡澡球 +1，本輪紀錄歸零
 
 ## GitHub Pages
-Publish from the `main` branch, root (`/`).
+由 `main` branch 根目錄部署。
+
+Current version: v4
