@@ -1,0 +1,56 @@
+name: Upgrade Tomica reward to v4
+on:
+  push:
+    branches: [main]
+    paths:
+      - hero-v4.txt
+      - .github/workflows/upgrade-v4.yml
+permissions:
+  contents: write
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Patch v4
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('index.html')
+          t=p.read_text(encoding='utf-8')
+          hero=Path('hero-v4.txt').read_text(encoding='utf-8').strip()
+          t,n=re.subn(r'(<section class="hero">\s*<img src=")[^"]+(" alt="爸爸和大孩子的玩具車風格插圖">)', lambda m:m.group(1)+hero+m.group(2), t, count=1)
+          assert n==1
+          reps=[
+            ('grid-template-columns:repeat(10,1fr)','grid-template-columns:repeat(5,1fr)'),
+            ('aria-label="10點可獲得一顆泡澡球"','aria-label="5點可獲得一顆泡澡球"'),
+            ('<span>= 10 →</span>','<span>= 5 →</span>'),
+            ('<span class="d"> / 10</span>','<span class="d"> / 5</span>'),
+            ('<div class="hint">⭐ 10 → 🛁</div>','<div class="hint">⭐ 5 → 🛁</div>'),
+            ('aria-label="集滿十點"','aria-label="集滿五點"'),
+            ('<div class="success-top">⭐ 10 / 10 ⭐</div>','<div class="success-top">⭐ 5 / 5 ⭐</div>'),
+            ('school: clampInt(p.school,0,999),','school: clampInt(p.school,0,99),'),
+            ('sleep: clampInt(p.sleep,0,999),','sleep: clampInt(p.sleep,0,99),'),
+            ('const p = Math.min(10, points());','const p = Math.min(5, points());'),
+            ('for(let i=0;i<10;i++){','for(let i=0;i<5;i++){'),
+            ('if(points() >= 10 && !state.celebrated){\n      state.celebrated=true;\n      save();\n      celebrate();\n    }','if(points() >= 5){\n      if(!state.celebrated){\n        state.celebrated=true;\n        save();\n      }\n      celebrate();\n    } else {\n      successEl.classList.remove(\'show\');\n    }'),
+            ('  function celebrate(){\n    confettiEl.innerHTML=\'\';','  function celebrate(){\n    if(successEl.classList.contains(\'show\')) return;\n    confettiEl.innerHTML=\'\';'),
+            ('state[which] = clampInt(state[which] + delta, 0, 999);','state[which] = clampInt(state[which] + delta, 0, 99);'),
+            ('if(points() < 10) state.celebrated=false;','if(points() < 5) state.celebrated=false;'),
+            ('if(points() < 10){','if(points() < 5){')
+          ]
+          for a,b in reps:
+              t=t.replace(a,b)
+          assert 'if(points() >= 10)' not in t
+          assert '= 5 →' in t and ' / 5</span>' in t
+          p.write_text(t,encoding='utf-8')
+          PY
+      - name: Commit v4
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm hero-v4.txt .github/workflows/upgrade-v4.yml
+          git add index.html
+          git commit -m "Update reward tracker to v4: 5 points per bath ball"
+          git push
